@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Tutor for Kids</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="light">
+    <div class="container">
+        <!-- Application Description -->
+        <h1>Welcome to Python Tutor for Kids!</h1>
+        <div class="description">
+            <p>
+                <strong>Python Tutor for Kids</strong> is an interactive and fun learning platform designed to help children learn the basics of Python programming. With the help of an AI-powered tutor, kids can ask questions, get explanations, and complete interactive assignments in a playful and engaging way.
+            </p>
+            <p>
+                Our application is designed to make learning Python easy and enjoyable for children. It features a <strong>customizable AI tutor</strong> that adapts to the child's interests, whether they love animals, space, science, or fantasy. The tutor provides clear and simple explanations, along with fun examples and challenges to keep kids motivated.
+            </p>
+            <p>
+                The platform also includes an <strong>interactive code editor</strong> where kids can write and run Python code directly in the browser. At the end of each lesson, the AI tutor generates <strong>interactive homework assignments</strong> to reinforce learning. With a child-friendly interface and engaging features, Python Tutor for Kids makes programming accessible and exciting for young learners.
+            </p>
+        </div>
+        <div class="features">
+            <h2>Key Features:</h2>
+            <ul>
+                <li>Customizable AI tutor with unique personalities and themes.</li>
+                <li>Interactive code editor for hands-on learning.</li>
+                <li>Fun and engaging homework assignments.</li>
+                <li>Child-friendly interface with colorful themes.</li>
+            </ul>
+        </div>
+
+        <!-- Theme Selector -->
+        <div id="theme-selector">
+            <label for="theme">Choose Theme:</label>
+            <select id="theme" onchange="changeTheme()">
+                <option value="light">Light</option>
+                <option value="colorful">Colorful</option>
+            </select>
+        </div>
+
+        <!-- Personality Selector -->
+        <div id="personality-selector">
+            <label for="personality">Choose Tutor Personality:</label>
+            <select id="personality" onchange="changePersonality()">
+                <option value="friendly">Friendly</option>
+                <option value="funny">Funny</option>
+                <option value="strict">Strict</option>
+            </select>
+        </div>
+
+        <!-- Character Selection -->
+        <div id="character-selection">
+            <label for="characters">Choose your AI Tutor:</label>
+            <select id="characters" onchange="changeCharacter()">
+                <option value="robot">Robot</option>
+                <option value="dinosaur">Dinosaur</option>
+                <option value="superhero">Superhero</option>
+            </select>
+        </div>
+
+        <!-- Display Character Image and Name -->
+        <div id="character-display">
+            <img id="character-image" src="{{ url_for('static', filename='images/robot.png') }}" alt="AI Tutor Character">
+            <h2 id="character-name">Robot Tutor</h2>
+        </div>
+
+        <!-- Chat Interface -->
+        <div id="chat">
+            <div id="chat-log"></div>
+            <form id="chat-form" onsubmit="sendMessage(event)">
+                <input type="text" id="user-input" placeholder="Ask me anything about Python..." required>
+                <button type="submit">Send</button>
+                <button type="button" onclick="resetChat()">Reset Chat</button>
+            </form>
+        </div>
+
+        <!-- Interactive Code Editor -->
+        <div id="code-editor">
+            <h2>Try It Yourself!</h2>
+            <textarea id="python-code" rows="10" cols="50"></textarea>
+            <button onclick="runCode()">Run Code</button>
+            <h3>Output:</h3>
+            <pre id="output"></pre>
+        </div>
+
+        <!-- Homework Section -->
+        <div id="homework">
+            <h2>Homework Assignment</h2>
+            <button onclick="generateHomework()">Get Homework</button>
+            <div id="homework-assignment"></div>
+        </div>
+
+        <!-- Quiz Section -->
+        <div id="quiz">
+            <h2>Quiz Time!</h2>
+            <p id="quiz-question">What does the `print()` function do in Python?</p>
+            <button onclick="checkAnswer('A')">A) Displays text on the screen</button>
+            <button onclick="checkAnswer('B')">B) Adds two numbers</button>
+            <button onclick="checkAnswer('C')">C) Creates a new file</button>
+            <button onclick="resetQuiz()">Reset Quiz</button>
+            <p id="quiz-feedback"></p>
+        </div>
+
+        <a href="{{ url_for('config') }}">Set API Key</a>
+    </div>
+
+    <!-- Brython Script for Code Editor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/brython/3.11.0/brython.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/brython/3.11.0/brython_stdlib.min.js"></script>
+
+    <script>
+        // Quiz questions
+        const quizQuestions = [
+            {
+                question: "What does the `print()` function do in Python?",
+                options: ["A) Displays text on the screen", "B) Adds two numbers", "C) Creates a new file"],
+                answer: "A"
+            },
+            {
+                question: "Which keyword is used to define a function in Python?",
+                options: ["A) func", "B) define", "C) def"],
+                answer: "C"
+            },
+            {
+                question: "What is the output of `2 ** 3` in Python?",
+                options: ["A) 6", "B) 8", "C) 9"],
+                answer: "B"
+            }
+        ];
+
+        let currentQuizIndex = 0;
+
+        // Function to load quiz question
+        function loadQuiz() {
+            const quiz = quizQuestions[currentQuizIndex];
+            document.getElementById("quiz-question").textContent = quiz.question;
+            const buttons = document.querySelectorAll("#quiz button");
+            buttons[0].textContent = quiz.options[0];
+            buttons[1].textContent = quiz.options[1];
+            buttons[2].textContent = quiz.options[2];
+        }
+
+        // Function to check quiz answer
+        function checkAnswer(answer) {
+            const quiz = quizQuestions[currentQuizIndex];
+            const feedback = document.getElementById("quiz-feedback");
+            if (answer === quiz.answer) {
+                feedback.textContent = "Correct! 🎉";
+                feedback.style.color = "green";
+            } else {
+                feedback.textContent = "Incorrect. Try again!";
+                feedback.style.color = "red";
+            }
+        }
+
+        // Function to reset chat
+        function resetChat() {
+            document.getElementById("chat-log").innerHTML = "";
+        }
+
+        // Function to reset quiz
+        function resetQuiz() {
+            currentQuizIndex = (currentQuizIndex + 1) % quizQuestions.length;
+            loadQuiz();
+            document.getElementById("quiz-feedback").textContent = "";
+        }
+
+        // Function to change theme
+        function changeTheme() {
+            const theme = document.getElementById("theme").value;
+            document.body.className = theme;
+            localStorage.setItem("theme", theme);
+        }
+
+        // Function to change AI tutor personality
+        function changePersonality() {
+            const personality = document.getElementById("personality").value;
+            localStorage.setItem("personality", personality);
+        }
+
+        // Function to change character
+        function changeCharacter() {
+            const character = document.getElementById("characters").value;
+            const characterImage = document.getElementById("character-image");
+            const characterName = document.getElementById("character-name");
+
+            if (character === "robot") {
+                characterImage.src = "{{ url_for('static', filename='images/robot.png') }}";
+                characterName.textContent = "Robot Tutor";
+            } else if (character === "dinosaur") {
+                characterImage.src = "{{ url_for('static', filename='images/dinosaur.png') }}";
+                characterName.textContent = "Dino Tutor";
+            } else if (character === "superhero") {
+                characterImage.src = "{{ url_for('static', filename='images/superhero.png') }}";
+                characterName.textContent = "Super Tutor";
+            }
+        }
+
+        // Function to run Python code
+        function runCode() {
+            const code = document.getElementById("python-code").value;
+            const output = document.getElementById("output");
+            output.textContent = "";
+
+            try {
+                brython(1, { stdout: output });
+                eval(code);
+            } catch (e) {
+                output.textContent = "Error: " + e.message;
+            }
+        }
+
+        // Function to generate homework
+        function generateHomework() {
+            fetch("/generate_homework", {
+                method: "POST",
+            })
+            .then(response => response.text())
+            .then(data => {
+                const homeworkAssignment = document.getElementById("homework-assignment");
+                homeworkAssignment.innerHTML = `<p>${data}</p>`;
+            });
+        }
+
+        // Function to send message to AI tutor
+        function sendMessage(event) {
+            event.preventDefault();
+            const userInput = document.getElementById("user-input").value;
+            const personality = localStorage.getItem("personality") || "friendly";
+
+            fetch("/ask", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: `user_input=${encodeURIComponent(userInput)}&personality=${encodeURIComponent(personality)}`,
+            })
+            .then(response => response.text())
+            .then(data => {
+                const chatLog = document.getElementById("chat-log");
+                chatLog.innerHTML += `<div class="user-message"><strong>You:</strong> ${userInput}</div>`;
+                chatLog.innerHTML += `<div class="ai-message"><strong>AI Tutor:</strong> ${data}</div>`;
+                document.getElementById("user-input").value = "";
+                chatLog.scrollTop = chatLog.scrollHeight; // Auto-scroll to the latest message
+            });
+        }
+
+        // Load saved theme and personality
+        const savedTheme = localStorage.getItem("theme") || "light";
+        document.body.className = savedTheme;
+        document.getElementById("theme").value = savedTheme;
+
+        const savedPersonality = localStorage.getItem("personality") || "friendly";
+        document.getElementById("personality").value = savedPersonality;
+
+        // Load the first quiz question
+        loadQuiz();
+    </script>
+</body>
+</html>
