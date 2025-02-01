@@ -67,4 +67,4 @@ def generate_homework():
         return f"An error occurred while generating homework: {str(e)}"
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run( )
